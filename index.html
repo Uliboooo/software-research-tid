@@ -1,61 +1,703 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex,nofollow">
-    <link rel="stylesheet" href="./style/style.css">
-    <title>TID-Rust</title>
+    <title>Software Development Research Club</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Urbanist:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. RESET & BASE & VARIABLES */
+        :root {
+            /* Dark Mode Variables (Default) */
+            --bg-body: #0a0a0a;
+            --bg-section: #121212;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222222;
+            --bg-visual: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            --bg-terminal: #1e1e1e;
+            --bg-terminal-header: #2d2d2d;
+            
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --text-head: #f5f5f5;
+            --text-code: #d4d4d4;
+            
+            --accent: #deff9a;
+            --accent-secondary: #deff9a; /* Text accent */
+            
+            --border: #333;
+            --shadow: rgba(0, 0, 0, 0.5);
+            --shadow-hover: rgba(0,0,0,0.3);
+            
+            --hero-gradient: radial-gradient(circle at 80% 20%, rgba(222, 255, 154, 0.08) 0%, transparent 50%);
+            --members-gradient: radial-gradient(circle at 0% 50%, rgba(63, 203, 255, 0.05) 0%, transparent 50%);
+            --visual-icon-color: #333;
+            --visual-bg-text: rgba(222, 255, 154, 0.03);
+            --tag-bg: #333;
+            --tag-text: #deff9a;
+            --icon-box-bg: #2a2a2a;
+        }
+
+        body.light-mode {
+            /* Light Mode Variables */
+            --bg-body: #f4f4f5;
+            --bg-section: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fcfcfc;
+            --bg-visual: linear-gradient(135deg, #e0e0e0 0%, #f0f0f0 100%);
+            /* Keep terminal dark for better code readability */
+            --bg-terminal: #2d2d2d; 
+            --bg-terminal-header: #404040;
+            
+            --text-main: #4b5563;
+            --text-muted: #6b7280;
+            --text-head: #111827;
+            --text-code: #e5e7eb;
+            
+            --accent: #65a30d; /* Darker lime green for visibility on light bg */
+            --accent-secondary: #65a30d;
+            
+            --border: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --shadow-hover: rgba(0, 0, 0, 0.1);
+            
+            --hero-gradient: radial-gradient(circle at 80% 20%, rgba(101, 163, 13, 0.1) 0%, transparent 50%);
+            --members-gradient: radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+            --visual-icon-color: #d1d5db;
+            --visual-bg-text: rgba(0, 0, 0, 0.03);
+            --tag-bg: #e5e7eb;
+            --tag-text: #4d7c0f;
+            --icon-box-bg: #f3f4f6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 700;
+            color: var(--text-head);
+        }
+
+        /* 2. LAYOUT UTILITIES */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        /* THEME TOGGLE BUTTON */
+        .theme-toggle-btn {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-head);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow);
+            font-size: 1.2rem;
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: var(--bg-card-hover);
+        }
+
+        /* 3. HERO SECTION */
+        .hero-section {
+            background: var(--hero-gradient);
+            position: relative;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(3rem, 5vw, 5rem);
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+
+        .hero-content h1 span {
+            color: var(--accent-secondary);
+            display: block;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-top: 24px;
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            max-width: 500px;
+        }
+
+        .hero-visual {
+            aspect-ratio: 4/3;
+            border-radius: 24px;
+            background: var(--bg-visual);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px var(--shadow);
+        }
+
+        .hero-visual i {
+            font-size: clamp(80px, 10vw, 150px);
+            color: var(--visual-icon-color);
+            z-index: 2;
+            filter: drop-shadow(0 0 20px rgba(222, 255, 154, 0.2));
+        }
+
+        .hero-visual::before {
+            content: '{ }';
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 900;
+            font-size: clamp(150px, 20vw, 300px);
+            color: var(--visual-bg-text);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+
+        /* 4. ACTIVITIES SECTION */
+        .activities-section {
+            background-color: var(--bg-section);
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--accent-secondary);
+            margin-bottom: 60px;
+            text-align: center;
+        }
+
+        .activities-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .bullet-list {
+            list-style: none;
+        }
+
+        .bullet-list li {
+            margin-bottom: 30px;
+            padding-left: 40px;
+            position: relative;
+            font-size: 1.125rem;
+        }
+
+        .bullet-list li strong {
+            color: var(--text-head);
+            font-weight: 700;
+        }
+
+        .bullet-list li::before {
+            content: '\f121';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--accent);
+            position: absolute;
+            left: 0;
+            top: 4px;
+            font-size: 1.25rem;
+        }
+
+        /* Terminal Mockup */
+        .terminal-mockup {
+            width: 100%;
+            background-color: var(--bg-terminal);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px var(--shadow);
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+        }
+
+        .terminal-header {
+            background-color: var(--bg-terminal-header);
+            padding: 12px 20px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .terminal-dot.red { background-color: #ff5f56; }
+        .terminal-dot.yellow { background-color: #ffbd2e; }
+        .terminal-dot.green { background-color: #27c93f; }
+
+        .terminal-body {
+            padding: 24px;
+            color: var(--text-code);
+            font-size: 1rem;
+            line-height: 1.6;
+            min-height: 300px;
+        }
+
+        .code-prompt { color: var(--accent); margin-right: 10px; user-select: none; }
+        .code-cmd { color: #fff; }
+        .code-output { color: #888; display: block; margin-bottom: 8px; }
+        /* Force light output for code in light mode if bg is dark? No, terminal is always darkish */
+        
+        .cursor { display: inline-block; width: 8px; height: 16px; background-color: var(--accent); animation: blink 1s infinite; vertical-align: middle;}
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* 5. MEMBERS SECTION */
+        .members-section {
+            background: var(--members-gradient);
+        }
+
+        .members-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .member-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .member-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px var(--shadow-hover);
+            background-color: var(--bg-card-hover);
+        }
+
+        .icon-box {
+            background-color: var(--icon-box-bg);
+            color: var(--accent-secondary);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .card-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .card-content p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: 'Urbanist', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* 6. CTA SECTION */
+        .cta-section {
+            padding: 0;
+            background-color: #050505; /* CTA Section always dark for contrast or follow theme? Let's make it follow theme but darker variant */
+            background-color: var(--bg-body);
+        }
+        
+        body.light-mode .cta-section {
+             background-color: #111; /* Force dark footer/CTA in light mode for impact? Or keep light? Let's try keeping it dark for visual weight at bottom */
+        }
+        /* Actually, let's stick to theme variables but add specific override if needed.
+           For now, let's use variables to make it light in light mode. */
+
+        .cta-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .cta-content {
+            padding: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: var(--bg-body);
+        }
+        
+        /* Force CTA dark style in Light Mode? 
+           Often footers are dark. Let's try to make CTA dark in both modes for consistency with Discord brand.
+        */
+        .cta-section {
+             /* Override to always be dark */
+             --bg-body: #050505;
+             --text-main: #ccc;
+             --text-head: #f5f5f5;
+             --accent: #deff9a;
+             --accent-secondary: #deff9a;
+        }
+
+        .cta-content h2 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            color: var(--accent-secondary);
+            margin-bottom: 24px;
+        }
+
+        .cta-content p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            color: var(--text-main);
+        }
+
+        .discord-box {
+            background: #2a2a2a;
+            padding: 24px;
+            border-left: 6px solid #5865F2;
+            border-radius: 0 8px 8px 0;
+            max-width: 500px;
+        }
+
+        .discord-box strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .discord-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #5865F2;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .discord-btn:hover {
+            background-color: #4752c4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+        }
+
+        .cta-visual {
+            background-color: #111;
+            background-image: 
+                linear-gradient(rgba(222, 255, 154, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(222, 255, 154, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-visual::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0) 20%, #050505 90%);
+        }
+
+        .discord-big-icon {
+            font-size: clamp(150px, 25vw, 300px);
+            color: #5865F2;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 50px rgba(88, 101, 242, 0.3));
+            z-index: 1;
+            transform: rotate(-10deg);
+        }
+
+        /* 7. FOOTER */
+        footer {
+            background-color: #000;
+            padding: 40px 0;
+            text-align: center;
+            border-top: 1px solid #222;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-grid, .activities-grid, .members-grid, .cta-wrapper {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .hero-section { text-align: center; padding-top: 120px; }
+            .hero-subtitle { margin: 24px auto 0; border-left: none; border-top: 4px solid var(--accent); padding-top: 20px; padding-left: 0; }
+            .hero-visual { order: -1; }
+            
+            .activities-grid { display: flex; flex-direction: column-reverse; }
+            
+            .cta-content { padding: 60px 24px; }
+            .cta-visual { height: 300px; }
+            .discord-big-icon { transform: rotate(0); }
+        }
+    </style>
 </head>
-
 <body>
-    <div class="title_header">
-        <p id="title_text">Rust同好会 in TID</p>
-    </div>
-    <div class="info">
-        <div class="what_is_rust">
-            <h2>What is Rust?</h2>
-            <p>'16~'22の間、Stack Overflow Dev Surveyで「最も愛されているプログラミング言語」で1位をとり続けた言語</p>
-            <p><small><a href="https://survey.stackoverflow.co/2022/#section-most-loved-dreaded-and-wanted-programming-scripting-and-markup-languages"
-                        target="_blank" rel="noopener noreferrer">Stack Overflow Developer Survey 2022 -
-                        Loved</a></small></p>
-            <!-- <img src="resource/rust-hello.png" alt="hello code in Rust" class="code_image"> -->
-            <ul>
-                <li>非常に高速な動作</li>
-                <li>効率的なメモリ活用</li>
-                <li>関数型、オブジェクト指向、手続型のいいとこどり</li>
-            </ul>
-            <a href="https://www.rust-lang.org/ja/" target="_blank" rel="noopener noreferrer">Rust公式サイト(日本語版)</a>
-        </div>
-    </div>
-    <div class="news">
-        <h2>News</h2>
-        <ul>
-            <li>2025-Jul-20: 発足</li>
-        </ul>
-    </div>
-    <div class="contents">
-        <div class="links">
-            <h2>Links</h2>
-            <div class="links_content">
-            <div id="rust">
-                <p><strong>Rust</strong></p>
-                <img src="./resource/rust_qr.png" alt="rust QR code" id="rust_qr" class="qr">
-                <a href="https://www.rust-lang.org/ja/" target="_blank" rel="noopener noreferrer" class="link_div">Rust org 日本語</a>
-            </div>
-            <div id="discord">
-                <p><strong>Discord server</strong></p>
-                <img src="./resource/discord_qr.png" alt="discord QR code" id="discord_qr" class="qr">
-                <a href="https://discord.gg/kHzAjzgEzN" target="_blank" rel="noopener noreferrer" class="link_div">Discord</a>
-            </div>
-            </div>
-        </div>
-    </div>
-    <div class="footer">
-        <p><a href="https://github.com/Uliboooo/rust-tid-pages" target="_blank" rel="noopener noreferrer">page repository</a></p>
-        <p>Copyright 2025 Uliboooo</p>
-    </div>
-</body>
 
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+        <i class="fa-solid fa-sun"></i>
+    </button>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <h1>ソフトウェア<br><span>開発研究-同好会</span></h1>
+                    <p class="hero-subtitle">プログラミング、開発、そして知見の共有。<br>新しい技術を共に探求する仲間を募集中。</p>
+                </div>
+                <div class="hero-visual">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Activities Section -->
+    <section class="activities-section">
+        <div class="container">
+            <h2 class="section-title">活動内容 / Activities</h2>
+            <div class="activities-grid">
+                <div class="text-col">
+                    <ul class="bullet-list">
+                        <li><strong>知見の共有</strong><br>プログラミングや開発に関する新しい技術やノウハウをシェア。</li>
+                        <li><strong>開発の誘い</strong><br>個人開発からチーム開発まで、気軽にメンバーを誘えます。</li>
+                        <li><strong>Discord Bot開発</strong><br>自サーバ用Botを <span style="color:var(--accent-secondary); font-weight:bold;">Rust</span> で開発中。</li>
+                        <li><strong>活動場所</strong><br>基本的にDiscord上で活動しています。</li>
+                    </ul>
+                </div>
+                <div class="visual-col">
+                    <div class="terminal-mockup">
+                        <div class="terminal-header">
+                            <div class="terminal-dot red"></div>
+                            <div class="terminal-dot yellow"></div>
+                            <div class="terminal-dot green"></div>
+                        </div>
+                        <div class="terminal-body">
+                            <!-- TypeScript -->
+                            <div>
+                                <span class="code-prompt">$</span><span class="code-cmd">npm run dev</span>
+                            </div>
+                            <div class="code-output">
+                                <span style="color: #27c93f;">➜</span>  Local:   http://localhost:5173/<br>
+                                <span style="color: #888;">   VITE v5.0.0  ready in 240ms</span>
+                            </div>
+                            <br>
+                            <!-- Rust -->
+                            <div>
+                                <span class="code-prompt">$</span><span class="code-cmd">cargo run --release</span>
+                            </div>
+                            <div class="code-output">
+                                Finished release [optimized] target(s) in 0.8s<br>
+                                Running `target/release/app`
+                            </div>
+                            <br>
+                            <!-- Haskell -->
+                            <div>
+                                <span class="code-prompt">$</span><span class="code-cmd">ghc -O2 main.hs && ./main</span>
+                            </div>
+                            <div class="code-output">
+                                [1 of 1] Compiling Main             ( main.hs, main.o )<br>
+                                Linking main ...
+                            </div>
+                            <div>
+                                <span class="code-prompt">$</span><span class="cursor"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Members Section -->
+    <section class="members-section">
+        <div class="container">
+            <h2 class="section-title">こんな人がいます / Members</h2>
+            <div class="members-grid">
+                <!-- Member 1 -->
+                <div class="member-card">
+                    <div class="icon-box"><i class="fa-solid fa-terminal"></i></div>
+                    <div class="card-content">
+                        <h3>The Systems Dev</h3>
+                        <p>CLI環境での効率化を追求するRustacean。</p>
+                        <div class="tags">
+                            <span class="tag">Rust</span>
+                            <span class="tag">Neovim</span>
+                            <span class="tag">Mac</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 2 -->
+                <div class="member-card">
+                    <div class="icon-box"><i class="fa-brands fa-linux"></i></div>
+                    <div class="card-content">
+                        <h3>The Web Wizard</h3>
+                        <p>カスタマイズされたLinux環境でモダンWeb開発。</p>
+                        <div class="tags">
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">Arch (Hyprland)</span>
+                            <span class="tag">Web</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 3 -->
+                <div class="member-card">
+                    <div class="icon-box"><i class="fa-solid fa-code-branch"></i></div>
+                    <div class="card-content">
+                        <h3>The Algo Expert</h3>
+                        <p>関数型言語とアルゴリズムの深淵。</p>
+                        <div class="tags">
+                            <span class="tag">Haskell</span>
+                            <span class="tag">VSCode</span>
+                            <span class="tag">Windows</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Member 4 -->
+                <div class="member-card">
+                    <div class="icon-box"><i class="fa-solid fa-gamepad"></i></div>
+                    <div class="card-content">
+                        <h3>The Game Dev</h3>
+                        <p>Unityを使ったゲーム制作とインタラクション。</p>
+                        <div class="tags">
+                            <span class="tag">C#</span>
+                            <span class="tag">Unity</span>
+                            <span class="tag">Windows</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-wrapper">
+            <div class="cta-content">
+                <h2>Join Our Discord</h2>
+                <p>TauriやAI開発に興味がある方も在籍しています。<br>初心者から熟練者まで、開発好きなら誰でも歓迎です。</p>
+                <div class="discord-box">
+                    <strong><i class="fa-brands fa-discord"></i> 活動場所</strong>
+                    <p style="margin-bottom: 0; color: #ccc;">Discordサーバにてお待ちしています。</p>
+                    <a href="https://discord.gg/kHzAjzgEzN" target="_blank" class="discord-btn">
+                        <i class="fa-solid fa-right-to-bracket"></i> サーバーに参加する
+                    </a>
+                </div>
+            </div>
+            <div class="cta-visual">
+                <i class="fa-brands fa-discord discord-big-icon"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Software Development Research Club. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const body = document.body;
+        const icon = toggleBtn.querySelector('i');
+
+        // Function to update icon based on current theme
+        function updateIcon() {
+            if (body.classList.contains('light-mode')) {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            } else {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            }
+        }
+
+        // Check local storage for theme preference
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'light') {
+            body.classList.add('light-mode');
+        }
+        updateIcon();
+
+        // Toggle theme on click
+        toggleBtn.addEventListener('click', () => {
+            body.classList.toggle('light-mode');
+            updateIcon();
+            
+            let theme = 'dark';
+            if (body.classList.contains('light-mode')) {
+                theme = 'light';
+            }
+            localStorage.setItem('theme', theme);
+        });
+    </script>
+
+</body>
 </html>
